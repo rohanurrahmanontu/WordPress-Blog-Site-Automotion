@@ -1,0 +1,931 @@
+{
+  "name": "WordPress Blog Site Automotion",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -608,
+        -208
+      ],
+      "id": "4f4ebc76-7e5c-418d-b687-366fdbc3d049",
+      "name": "Telegram Trigger",
+      "webhookId": "fd971982-b14f-45a2-9bd6-a3efdc42e945",
+      "credentials": {
+        "telegramApi": {
+          "id": "sv9gNm1PRYTQMxaQ",
+          "name": "Wordpress Blog Automotion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"title\": \"Importance of learning ai automation\",\n\t\"post\": \"Learning AI automation is crucial for boosting productivity, cutting costs, improving decision-making, and enhancing customer experience by handling repetitive tasks, analyzing vast data, and freeing humans for strategic work, offering strong career growth across many sectors, not just tech, as businesses increasingly rely on AI for efficiency and scalability. \"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        96
+      ],
+      "id": "37ed574f-50bb-4e3a-93cc-76a982e85c3d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryMongoDbChat",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        96
+      ],
+      "id": "b1bd2963-66ea-4a07-a9e4-5cddf7244716",
+      "name": "MongoDB Chat Memory",
+      "credentials": {
+        "mongoDb": {
+          "id": "ab8DckvetDWKlIwY",
+          "name": "teasy"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        80,
+        96
+      ],
+      "id": "0c5da699-bff2-4063-9b1e-69208fb5eeef",
+      "name": "Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "WxHrZlEXpTsFw7FA",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1dea6833-df48-4a21-b8b0-99bec9eb2ecc",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        -304
+      ],
+      "id": "04dac6a8-cdf1-4228-b6ed-40eb68981ef8",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "title": "={{ $json.Title }}",
+        "additionalFields": {
+          "content": "={{ $json.Content }}",
+          "status": "publish"
+        }
+      },
+      "type": "n8n-nodes-base.wordpress",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        416
+      ],
+      "id": "15ad8e55-4af1-4e48-ae8c-a4b838a9f786",
+      "name": "Create a post",
+      "credentials": {
+        "wordpressApi": {
+          "id": "gbvJfZk5eDsOKDiD",
+          "name": "rohanurrahman"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://gen.pollinations.ai/image/{{ $('Get Blog Content').item.json.Title }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "flux"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer sk_5e6S7Kq6izhplf3OTKqfZXZtT7SN4AyP"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        128,
+        416
+      ],
+      "id": "a66a7389-00df-4ef4-b506-fd2ee5327197",
+      "name": "Generate Image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://www.rohanurrahman.gamer.gd/wp-json/wp/v2/media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "=attachment;  filename = \"cover-image-{{ $('Create a post').item.json.id }}.jpeg\""
+            },
+            {
+              "name": "content-type",
+              "value": "={{ $binary.data.mimeType }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        352,
+        416
+      ],
+      "id": "54a2f19a-85f7-4473-af95-b3525009410c",
+      "name": "Upload Image To Media",
+      "credentials": {
+        "wordpressApi": {
+          "id": "gbvJfZk5eDsOKDiD",
+          "name": "rohanurrahman"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://www.rohanurrahman.gamer.gd/wp-json/wp/v2/posts/{{ $('Create a post').item.json.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wordpressApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "featured_media",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        416
+      ],
+      "id": "397c6704-e9e4-46ec-bbb5-ef15c809970f",
+      "name": "Update the post",
+      "credentials": {
+        "wordpressApi": {
+          "id": "gbvJfZk5eDsOKDiD",
+          "name": "rohanurrahman"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q",
+          "mode": "list",
+          "cachedResultName": "Wordpress Blog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheduled post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('Get Blog Content').item.json.Title }}",
+            "IsPosted?": "Yes"
+          },
+          "matchingColumns": [
+            "Title"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "IsPosted?",
+              "displayName": "IsPosted?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        800,
+        416
+      ],
+      "id": "8d9a9a52-3fbd-4ebd-b83f-6fa28399405d",
+      "name": "Post Status Updated",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WK6XOvcKlbElnPFU",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "5762591601",
+        "text": "={{ $json.Title }} - Posted",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        416
+      ],
+      "id": "2ae25761-17d4-4336-8e59-d3f05ede6e13",
+      "name": "Post Success message",
+      "webhookId": "1117e712-9bc8-4265-92cd-4736f7c14552",
+      "credentials": {
+        "telegramApi": {
+          "id": "sv9gNm1PRYTQMxaQ",
+          "name": "Wordpress Blog Automotion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        416
+      ],
+      "id": "eddbc4ab-e7f0-42b6-9d32-fcf8aeaf6806",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        416
+      ],
+      "id": "94f4a2c3-c774-46b3-8381-7bdbd2aa0209",
+      "name": "End"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        -320
+      ],
+      "id": "2162a52d-8878-4355-a0ef-039935f16cfc",
+      "name": "End1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic : {{ $json.message.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "## Overview\nYou are an expert wordpress blog post writter. Your task is to write high engaging title and blog post for wordpress website based on the user topic.\n\n\n## Role\n- Write SEO frindly Hooked Title.\n- Write SEO fridnly high engaging blog post within 1500-2000 character with proper html format.\n\n## Tools\n-Always use the Tavily tools for web searn on the topic before generate any output for the acuurate information and more realistic content.\n\n*Provide the title and blog post seperately following the json output.\n\n{\n\t\"title\": \"Importance of learning ai automation\",\n\t\"post\": \"Learning AI automation is crucial for boosting productivity, cutting costs, improving decision-making, and enhancing customer experience by handling repetitive tasks, analyzing vast data, and freeing humans for strategic work, offering strong career growth across many sectors, not just tech, as businesses increasingly rely on AI for efficiency and scalability. \"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -272,
+        -208
+      ],
+      "id": "83c0544e-6862-46d2-b317-0c6abf5bb484",
+      "name": "Content Generator"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a0ce9c5-5d16-4507-aa61-4220e2a04e73",
+              "name": "output.title",
+              "value": "={{ $json.output.title }}",
+              "type": "string"
+            },
+            {
+              "id": "dd9089e9-2c07-413f-8c55-d6c5d4344100",
+              "name": "output.post",
+              "value": "={{ $json.output.post }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        -320
+      ],
+      "id": "51ef0d9c-e86a-4c7e-b3c3-8b9e50cb4db0",
+      "name": "Get Title and Content"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "message": "=Is That Content good to go?\n\nTitle: {{ $json.output.title }}\n\nPost : {{ $json.output.post }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "resumeAmount": 45,
+              "resumeUnit": "minutes"
+            }
+          },
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        -320
+      ],
+      "id": "91b158b6-2e0a-446b-89fa-7033fbc3b359",
+      "name": "Send for approval",
+      "webhookId": "e1c13634-7ce5-4fe2-8713-2c044e76e17b",
+      "credentials": {
+        "telegramApi": {
+          "id": "sv9gNm1PRYTQMxaQ",
+          "name": "Wordpress Blog Automotion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q",
+          "mode": "list",
+          "cachedResultName": "Wordpress Blog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheduled post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Title": "={{ $('Get Title and Content').item.json.output.title }}",
+            "Content": "={{ $('Get Title and Content').item.json.output.post }}",
+            "IsPosted?": "No"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "IsPosted?",
+              "displayName": "IsPosted?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        -320
+      ],
+      "id": "8980ed59-4bbd-496d-8576-4266bc6795ba",
+      "name": "Add Content for shedued post",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WK6XOvcKlbElnPFU",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title : {{ $('Content Generator').item.json.output.title }}\n\n\nContent : {{ $('Content Generator').item.json.output.post }}\n\n\n\nYou are an expert content reviewer. Your task is to review others ai's Title and Content and ppolish the title and content and make them better.\n\n*provide the content in proper html format\n\n*Provide the title and blog post seperately following the json output.\n\n{\n\t\"title\": \"Importance of learning ai automation\",\n\t\"post\": \"Learning AI automation is crucial for boosting productivity, cutting costs, improving decision-making, and enhancing customer experience by handling repetitive tasks, analyzing vast data, and freeing humans for strategic work, offering strong career growth across many sectors, not just tech, as businesses increasingly rely on AI for efficiency and scalability. \"\n}\n",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        -288,
+        -368
+      ],
+      "id": "f8768a4a-9af1-4b92-842e-dcd0281fbd07",
+      "name": "Revise the content"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        96
+      ],
+      "id": "c0e941df-8647-40d4-bf90-c81e61013780",
+      "name": "2.5 flash",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6sbCQiuU22BDcUgt",
+          "name": "rafid"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        96
+      ],
+      "id": "6817edf4-9139-446f-a156-a30cc992fe93",
+      "name": "4.0 mini",
+      "credentials": {
+        "openAiApi": {
+          "id": "gvxqjD4V20BEFL0Y",
+          "name": "Hablu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q",
+          "mode": "list",
+          "cachedResultName": "Wordpress Blog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "sheduled post",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rkiJjHmsyOpACOoCg6t1LfgrhyFW7nRfO3UZN5HGX2Q/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "IsPosted?",
+              "lookupValue": "No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -320,
+        416
+      ],
+      "id": "41acf36d-2cf1-42e4-b6cd-9ecd3da5023f",
+      "name": "Get Blog Content",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WK6XOvcKlbElnPFU",
+          "name": "Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Generate content and sheduled for post\n**This workflow take the topic from the user through telegram and then generate high quality title and blog post getting approval from the user and add them into database to sheduled the post\n",
+        "height": 736,
+        "width": 2224,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -704,
+        -448
+      ],
+      "typeVersion": 1,
+      "id": "1f4107f8-2a94-4c05-8aef-6b674201f124",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Automed sheduled post\n**Everyday 9am it i'll get the conetent from the sheet, generate the image and post it and update the db",
+        "height": 288,
+        "width": 2160
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "23d7fcdd-ed96-43a1-b417-3439bf4d63a5",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Content Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Content Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          },
+          {
+            "node": "Revise the content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Content Generator",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Content Generator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Add Content for shedued post",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Revise the content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a post": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Upload Image To Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image To Media": {
+      "main": [
+        [
+          {
+            "node": "Update the post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update the post": {
+      "main": [
+        [
+          {
+            "node": "Post Status Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Status Updated": {
+      "main": [
+        [
+          {
+            "node": "Post Success message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Blog Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Success message": {
+      "main": [
+        [
+          {
+            "node": "End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Generator": {
+      "main": [
+        [
+          {
+            "node": "Get Title and Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Title and Content": {
+      "main": [
+        [
+          {
+            "node": "Send for approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send for approval": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Content for shedued post": {
+      "main": [
+        [
+          {
+            "node": "End1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revise the content": {
+      "main": [
+        [
+          {
+            "node": "Get Title and Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2.5 flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Revise the content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4.0 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Content Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Blog Content": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "824af225-ec10-4912-8419-3adf5eb5142a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f00bba974abf03cb5183d4d65f8a9645a781b04770df6a7d08284fca87d50b3"
+  },
+  "id": "bl6DBftkDnZIu5TV",
+  "tags": []
+}
